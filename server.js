@@ -7,21 +7,19 @@ app.use(express.static(__dirname + '/public'));
 const getLastLine = require('./fileTools.js').getLastLine
 var follow = require('text-file-follower');
 const { callbackify } = require('util');
-var path = require('path');
+
 const { exit } = require('process');
 
+const config = require('./config.js').config
 
 var interval
 var lineTemp
 var lastLineData
-var doConsoleLogging = true
-var doFullConsoleLogging = false
-var updateRate = 5000
-var filePath
-var port = 3000
 
 
 
+config.updateRate
+config.port
 
 checkFGLogFile(function () {
     lastLine(function (line) {
@@ -32,9 +30,9 @@ checkFGLogFile(function () {
         if (getType(id.rest, 'Log file closed')) {
             // console.log('file not startet')
             log('File Not Started', true, true)
-            interval = setInterval(lookForFileUpdate, updateRate);
+            interval = setInterval(lookForFileUpdate, config.updateRate);
         } else {
-            liveReader(filePath)
+            liveReader(config.path)
         }
     })
 })
@@ -62,6 +60,13 @@ app.post('/microTemplates', function (req, res) {
     return
 });
 
+app.get('/download', function (req, res) {
+    res.download(config.path); // Set disposition and send it.
+});
+
+app.get('/showRaw', function (req, res) {
+    res.sendFile(config.path);
+});
 
 io.on('connection', function (socket) {
     console.log('connection')
@@ -75,6 +80,13 @@ io.on('connection', function (socket) {
         console.log('ue4Test');
 
         socket.emit('ue4Test', data);
+
+    })
+    socket.on('getConfig', function (callback) {
+
+        console.log('getConfig');
+
+        callback(config)
 
     })
 });
@@ -92,22 +104,11 @@ function liveReader(file) {
             log(line, true, true)
         }
 
-        if (doConsoleLogging) {
-            if (doFullConsoleLogging) {
-                //  console.log(line)
-            } else {
-
-                if (getType(id.rest, 'SatisfactoryModLoader')) {
-                    // console.log(id.rest)
-                }
-            }
-        }
-
         if (!isFileEnded && getType(id.rest, 'Log file closed')) {
             isFileEnded = true
             console.log('Satisfactory log file has been closed and a new one is automatically searched for')
             log('Satisfactory log file has been closed and a new one is automatically searched for', true, true)
-            interval = setInterval(lookForFileUpdate, updateRate);
+            interval = setInterval(lookForFileUpdate, config.updateRate);
             return
         }
     });
@@ -128,7 +129,7 @@ function lookForFileUpdate() {
             //console.log('New Log File Started')
             log('New Log File Started', true, true)
             isFileEnded = false
-            liveReader(filePath)
+            liveReader(config.path)
             clearInterval(interval)
         }
     })
@@ -163,9 +164,9 @@ function getType(str, type) {
 }
 
 function lastLine(callback) {
-    getLastLine(filePath, 1)
+    getLastLine(config.path, 1)
         .then((lastLine) => {
-            //console.log(lastLine)
+            // console.log(lastLine)
             callback(lastLine)
         })
         .catch((err) => {
@@ -175,17 +176,12 @@ function lastLine(callback) {
 }
 
 function checkFGLogFile(callback) {
-    var LogPath
     //console.log(process.env)
 
-    LogPath = path.join(process.env.LOCALAPPDATA, 'FactoryGame', 'Saved', 'Logs', 'FactoryGame.log')
-
-    // console.log(LogPath)
-    log(LogPath, true, true)
-    if (fs.existsSync(LogPath)) {
+    log(config.path, true, true)
+    if (fs.existsSync(config.path)) {
         //file exists
-        filePath = LogPath
-        callback(LogPath)
+        callback(config.path)
     } else {
         console.log('Satisfactory log file could not be found')
         process.exit(1)
@@ -193,5 +189,5 @@ function checkFGLogFile(callback) {
 }
 
 
-httpServer.listen(port);
-console.log('Log Server Running on http://localhost:' + port)
+httpServer.listen(config.port);
+console.log('Log Server Running on http://localhost:' + config.port)

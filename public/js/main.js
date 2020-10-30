@@ -13,6 +13,10 @@ socket.on('data', (data) => {
     console.log(data);
 });
 
+socket.on('file', (data) => {
+    console.log(data);
+});
+
 socket.on('newLine', (temp, data) => {
     addLine('lines', temp, data)
     scrolldown('lines')
@@ -35,3 +39,35 @@ function loadFile() {
 }
 
 
+function loadCfg(callback) {
+    socket.emit('getConfig', function (config) {
+        console.log(config)
+        callback(config)
+    });
+}
+
+function CopyPath() {
+    loadCfg(function (config) {
+        copyToClipboard(config.path)
+    })
+
+}
+
+function search() {
+    var SearchString = searchInput.value
+    console.log(SearchString)
+    window.find(SearchString)
+}
+var searchInput = document.getElementById('search')
+var searchBTN = document.getElementById('searchBTN')
+searchBTN.addEventListener("click", search, false);
+
+
+const copyToClipboard = str => {
+    const el = document.createElement('textarea');
+    el.value = str;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+};
