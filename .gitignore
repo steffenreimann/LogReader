@@ -104,4 +104,4 @@ dist
 .tern-port
 
 # electron release builds
-.release-build/
+.release-builds/
