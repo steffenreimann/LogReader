@@ -28,7 +28,7 @@
     "text-file-follower": "^0.1.0"
   },
   "devDependencies": {
-    "electron": "^9.3.3",
+    "electron": "^9.4.0",
     "electron-packager": "^15.1.0",
     "electron-rebuild": "^1.11.0"
   },
