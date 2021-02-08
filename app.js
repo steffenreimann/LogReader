@@ -16,8 +16,8 @@ app.on('ready', function () {
     });
 
     mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'public/index.html'),
-        protocol: 'file:',
+        pathname: 'localhost:3000',
+        protocol: 'http:',
         slashes: true,
         title: 'Electron Example'
     }));
@@ -235,11 +235,12 @@ function lookForFileUpdate() {
 
 
 function log(data, sEmit, terminal) {
+
     if (sEmit) {
-        io.emit('newLine', lineTemp, { data: data });
+        io.emit('newLine', data);
     }
     if (terminal) {
-        //console.log(data);
+        console.log(data);
     }
 }
 
@@ -288,4 +289,4 @@ function checkFGLogFile(callback) {
 
 
 httpServer.listen(config.port);
-//console.log('Log Server Running on http://localhost:' + config.port)
+console.log('Log Server Running on http://localhost:' + config.port)

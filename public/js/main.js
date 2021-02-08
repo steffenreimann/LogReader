@@ -18,7 +18,7 @@ socket.on('file', (data) => {
 });
 
 socket.on('newLine', (data) => {
-
+    console.log(data)
     addLine('lines', data)
     if (doScroll) {
         scrolldown('lines')
@@ -44,7 +44,7 @@ function scrolldown() {
 function addLine(element, data) {
 
     //document.getElementById(element).innerHTML += ejs.render(temp, data);
-    document.getElementById(element).innerHTML += `<div class="card mt-1"><div class="card-body"><p class="card-text">${data.data.raw}</p></div></div>`
+    document.getElementById(element).innerHTML += `<div class="card mt-1"><div class="card-body"><p class="card-text">${data}</p></div></div>`
 }
 
 function loadFile() {
