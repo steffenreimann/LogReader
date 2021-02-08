@@ -1,0 +1,12 @@
+<li class="list-group-item"> <%- data.displayName %><%- data.path %>
+    <!-- Default switch -->
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" onchange="changeShow('<%- data.displayName %>')"
+            id="<%- data.displayName %>" <%- checked %> />
+        <label class="form-check-label" for="<%- data.path %>">Show</label>
+    </div>
+    <button onclick="removeLogFile('<%- data.path %>')" class="btn btn-outline-primary float-right" type="button"
+        data-ripple-color="dark">
+        Remove
+    </button>
+</li>
