@@ -4,6 +4,7 @@ window.slash = require('slash');
 const path = require('path')
 const ejs = require('ejs')
 const remote = require('electron').remote;
+//var smmapi = require('satisfactory-mod-manager-api');
 window.instances = {}
 
 window.getInstances = async function (params) {
@@ -65,3 +66,4 @@ async function renderInstances(instances) {
 }
 
 console.log('Preload are loaded!');
+//console.log(smmapi);

@@ -129,8 +129,9 @@ var fs = require('fs');
 expressapp.use(express.static(__dirname + '/public'));
 const ft = require('./fileTools.js')
 var follow = require('text-file-follower');
+//var smmapi = require('satisfactory-mod-manager-api');
 const { callbackify } = require('util');
-var ks = require('node-key-sender');
+
 
 const { exit } = require('process');
 
@@ -138,7 +139,9 @@ const config = require('./config.js').config
 
 const { exec, spawn } = require('child-process-async');
 
+//var SMMAPI = require('satisfactory-mod-manager-api')
 
+//console.log(SMMAPI)
 
 
 config.updateRate
@@ -204,17 +207,13 @@ io.on('connection', function (socket) {
         callback(config)
 
     })
-    socket.on('startGame', function (data, callback) {
+    socket.on('newWindow', function (data) {
 
         //console.log('getConfig');
-        startgame(data, callback)
+        ft.startGame(data)
 
     })
 
-
-    socket.on('newWindow', function (data, callback) {
-        makeWindow(data)
-    })
 
     socket.on('getHTMLView', function (data, callback) {
 
@@ -264,120 +263,6 @@ function FindFilter(data, callback) {
 
 
 
-var instances = {}
-//id: { window: '', clientProcess: '', LogPath: '' }
-
-async function makeWindow(data) {
-
-    var id = UUID()
-    var ins = ''
-    if (count(instances) != 0) {
-        ins = `_${count(instances) + 1}`
-    }
-    var logPath = path.join(process.env.LOCALAPPDATA, 'FactoryGame/Saved/Logs', `FactoryGame${ins}.log`)
-
-
-    const child_process = spawn(data.filePath, data.attr, {});
-    // do whatever you want with `child` here - it's a ChildProcess instance just
-    // with promise-friendly `.then()` & `.catch()` functions added to it!
-    //child_process.stdin.write(...);
-
-    // child_process.stdout.on('data', (data) => {
-    //     cb(data.toString())
-    //     // console.log('Pipe Data', data.toString())
-    // });
-    child_process.stderr.on('data', (data) => {
-        cb(data)
-        console.log(data)
-    })
-    child_process.stderr.on('data', (data) => {
-        cb(data)
-        console.log(data)
-    })
-    child_process.on('exit', function (code) {
-        console.log('child process exited with code ' + code);
-
-        console.log('Verbleibende Instanzen ', instances);
-        if (instances[id].WindowOpen) {
-            newWindow.setTitle('File Closed! - ' + logPath)
-        }
-        delete instances[id];
-        instancesChanged().then((data) => {
-            mainWindow.webContents.send('instancesChanged', data);
-        })
-        return
-    });
-
-    // const { stdout, stderr, exitCode } = await child_process;
-
-    newWindow = new BrowserWindow({
-        width: 1200,
-        height: 700,
-        title: 'Live Reading File - ' + logPath,
-        webPreferences: {
-            contextIsolation: false,
-            nodeIntegration: false,
-            preload: path.join(__dirname, 'preload.js')
-        }
-    });
-
-    newWindow.loadURL(url.format({
-        pathname: 'localhost:3000/log',
-        protocol: 'http:',
-        slashes: true
-    }));
-
-    newWindow.webContents.on('did-finish-load', () => {
-        //newWindow.webContents.openDevTools()
-        //newWindow.webContents.send('newWindowData', data);
-    })
-
-    // Quit app when closed
-    newWindow.on('closed', function () {
-        if (typeof instances[id] != 'undefined') {
-            instances[id].WindowOpen = false
-        }
-
-        instancesChanged().then((data) => {
-            //  mainWindow.webContents.send('instancesChanged', data);
-        })
-
-    });
-
-
-    var interval = setInterval(test, config.updateRate);
-
-    function test(params) {
-        isFileNew(instances[id].LogPath, (isNew) => {
-            console.log('Check File = ', isNew)
-            if (isNew) {
-                console.log('Clear Interval')
-                clearInterval(interval);
-                ft.newReader(logPath, (line) => {
-                    if (instances[id].WindowOpen) {
-                        instances[id].window.webContents.send('log_msg', line);
-                    }
-                })
-                // liveReader(logPath, function (line) {
-                //     if (instances[id].WindowOpen) {
-                //         instances[id].window.webContents.send('log_msg', line);
-                //     }
-                // })
-            }
-        })
-    }
-
-    instances[id] = { id: id, window: newWindow, process: child_process, LogPath: logPath, data: data, WindowOpen: true }
-
-    //console.log(instances)
-
-    instances[id].window.webContents.openDevTools()
-
-    instancesChanged().then((data) => {
-        mainWindow.webContents.send('instancesChanged', data);
-    })
-
-}
 
 
 
