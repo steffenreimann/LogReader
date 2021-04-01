@@ -1,3 +1,4 @@
+
 var socket = io.connect('localhost:3000');
 console.log(' loaded');
 var lineTemp
@@ -186,6 +187,13 @@ var searchBTN = document.getElementById('searchBTN')
 searchBTN.addEventListener("click", search, false);
 
 
+var clearbtn = document.getElementById('clearbtn')
+clearbtn.addEventListener("click", clear, false);
+
+var clearbtn = document.getElementById('startGameBTN')
+clearbtn.addEventListener("click", startGame, false);
+
+
 const copyToClipboard = str => {
     const el = document.createElement('textarea');
     el.value = str;
@@ -195,9 +203,154 @@ const copyToClipboard = str => {
     document.body.removeChild(el);
 };
 
+function clear() {
+    console.log('Clear Log')
+    document.getElementById('lines').innerHTML = ''
+}
+
+
+function getHTMLView(file, cb) {
+    socket.emit('getHTMLView', file, function (filedata) {
+        cb(filedata)
+    });
+}
+
+
+function startGame(params) {
+
+
+    // var attr = ["-EpicPortal", "-NoSteamClient", "-NoMultiplayer", "-Username=herbbertus"]
+    var attr = []
+
+    var i = 0
+
+    currentAttr.forEach(element => {
+        i++
+        attr.push(element.value)
+        console.log('attr.length == i', attr.length == i);
+        if (currentAttr.length == i) {
+            console.log('Open New Window');
+            var startData = { filePath: currentFile.filePaths[0], ext: currentFile.ext, attr: attr }
+            socket.emit('newWindow', startData, function (oparation) {
+                console.log('LogFile changeShow? ', oparation)
+
+            });
+        }
+
+    });
+}
+
+
+
+
+var currentFile = { filePaths: ['E:/epicgames/SatisfactoryEarlyAccess/FactoryGame/Binaries/Win64/FactoryGame-Win64-Shipping.exe'], ext: '.exe' }
+var currentAttr = []
+
+
+function openDialog(params) {
+    socket.emit('openDialog', function (result) {
+        console.log('openDialog ', result)
+
+        if (!result.canceled) {
+            currentFile = result
+            document.getElementById('filePath').value = result.filePaths[0]
+        }
+        if (result.ext == '.exe') {
+
+        }
+
+    });
+}
+
+
+function addAttr(params) {
+    console.log(typeof params);
+    if (typeof params != 'undefined') {
+        if (typeof params == 'object') {
+            getHTMLView('attrItem', (htmldata) => {
+                params.forEach(element => {
+                    var data = { value: element, id: UUID() }
+                    currentAttr.push(data)
+                    document.getElementById('attr').innerHTML += ejs.render(htmldata, { data: data });
+
+                });
+            })
+        } else {
+
+            var data = { value: params, id: UUID() }
+            currentAttr.push(data)
+            console.log(data)
+            getHTMLView('attrItem', (htmldata) => {
+                document.getElementById('attr').innerHTML += ejs.render(htmldata, { data: data });
+            })
+        }
+    } else if (document.getElementById('attrInput').value != '') {
+        console.log(typeof document.getElementById('attrInput').value);
+        var data = { value: document.getElementById('attrInput').value, id: UUID() }
+        currentAttr.push(data)
+        console.log(data)
+        getHTMLView('attrItem', (htmldata) => {
+            document.getElementById('attr').innerHTML += ejs.render(htmldata, { data: data });
+        })
+    }
+}
+
+function changeAttr(id) {
+
+    //var data = { value: document.getElementById('attrInput-' + id).value, id: id }
+
+    var i = 0
+    currentAttr.forEach(element => {
+        if (element.id == id) {
+            currentAttr[i].value = document.getElementById('attrInput-' + id).value
+            renderAttr()
+        }
+        i++
+    });
+}
+
+
+function renderAttr() {
+    document.getElementById('attr').innerHTML = ''
+    getHTMLView('attrItem', (htmldata) => {
+        currentAttr.forEach(element => {
+            document.getElementById('attr').innerHTML += ejs.render(htmldata, { data: element });
+        });
+    })
+}
+
+function removeAttr(id) {
+    var i = 0
+    currentAttr.forEach(element => {
+        if (element.id == id) {
+            currentAttr.splice(i, 1)
+            renderAttr()
+        }
+        i++
+    });
+}
+
+function clearAttr(params) {
+    currentAttr.clear()
+    document.getElementById('attr').innerHTML = ``
+}
+
+
+
+
+function UUID() {
+    function ff(s) {
+        var pt = (Math.random().toString(16) + "000000000").substr(2, 8);
+        return s ? "-" + pt.substr(0, 4) + "-" + pt.substr(4, 4) : pt;
+    }
+    return ff() + ff(true) + ff(true) + ff();
+}
+
+
 
 
 getSettings()
 
 
 
+addAttr(['-EpicPortal', '-NoSteamClient', '-NoMultiplayer', '-Username=herbbert', '-ResX=1000', '-ResY=1000', '-WINDOWED'])

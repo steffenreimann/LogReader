@@ -1,0 +1,16 @@
+<div class="card mt-1">
+    <div class="card-body">
+        <p class="card-text">
+            <%- JSON.stringify(data) %>
+        </p>
+        <button onclick="window.openFileInBrowser('<%- JSON.stringify(window.slash(data.LogPath)) %>')" class="btn btn-outline-primary" type="button" data-ripple-color="dark">
+            Open Log Path in Explorer
+        </button>
+        <button id="reopenBTN-<%- data.id %>" onclick="window.reopenWindow('<%- data.id %>')" class="btn btn-outline-primary" type="button" data-ripple-color="dark">
+            Show Log
+        </button>
+        <button id="reopenBTN-<%- data.id %>" onclick="window.quitInstance('<%- data.id %>')" class="btn btn-outline-primary" type="button" data-ripple-color="dark">
+            Quit Instance
+        </button>
+    </div>
+</div>

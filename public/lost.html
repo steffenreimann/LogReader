@@ -1,0 +1,58 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <!-- 
+            1. Include CSS that define the styles of the tabs.
+            You can use the default styles of the module or include your own styles.
+        -->
+    <link rel="stylesheet" href="node_modules/electron-tabs/electron-tabs.css">
+    <style>
+        /* As the tab needs to be in the border of the view, remove margin of the body tag */
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 2. Include the basic markup of the tabs view -->
+    <div class="etabs-tabgroup">
+        <div class="etabs-tabs"></div>
+        <div class="etabs-buttons"></div>
+    </div>
+    <div class="etabs-views"></div>
+
+    <!--
+            3. Include initialization code, you can include another js file
+            Or write directly the JS code here.
+        -->
+    <script>
+        // You can also require other files to run in this process
+        require('./renderer.js')
+    </script>
+</body>
+
+</html>
+
+<!-- End your project here-->
+</body>
+
+<!-- MDB -->
+<script type="text/javascript" src="js/mdb.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<!-- MDB -->
+
+
+
+<script src="js/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ejs@3.1.5/ejs.min.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+<script type="text/javascript">
+
+
+</script>
+
+</html>
