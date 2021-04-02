@@ -4,7 +4,11 @@ window.slash = require('slash');
 const path = require('path')
 const ejs = require('ejs')
 const remote = require('electron').remote;
-//var smmapi = require('satisfactory-mod-manager-api');
+
+
+
+
+
 window.instances = {}
 
 window.getInstances = async function (params) {
@@ -41,6 +45,12 @@ window.quitInstance = async function (id) {
     return result
 }
 
+window.getSMMData = async function () {
+    const result = await ipcRenderer.invoke('getSMMData');
+    renderSMMData(result)
+    //return result
+}
+
 async function getHTMLView(data) {
     const result = await ipcRenderer.invoke('getHTMLView', data);
     return result
@@ -52,6 +62,15 @@ ipcRenderer.on('instancesChanged', function (event, data) {
     renderInstances(data)
     window.instances = data
 });
+
+
+
+async function renderSMMData(SMMData) {
+    var html = await getHTMLView('SMMData')
+    document.getElementById('SMMData').innerHTML = ''
+    console.log('Render SMMData ', SMMData)
+    document.getElementById('SMMData').innerHTML += ejs.render(html, { data: SMMData });
+}
 
 async function renderInstances(instances) {
     var html = await getHTMLView('newReader')
@@ -66,4 +85,3 @@ async function renderInstances(instances) {
 }
 
 console.log('Preload are loaded!');
-//console.log(smmapi);

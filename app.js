@@ -139,9 +139,8 @@ const config = require('./config.js').config
 
 const { exec, spawn } = require('child-process-async');
 
-//var SMMAPI = require('satisfactory-mod-manager-api')
+var { getProfiles, getInstalls, createProfile, deleteProfile, renameProfile, isDebug, setDebug } = require('satisfactory-mod-manager-api')
 
-//console.log(SMMAPI)
 
 
 config.updateRate
@@ -318,10 +317,22 @@ ipcMain.handle('getHTMLView', async (event, data) => {
         });
     })
 })
+
 ipcMain.handle('windowShow', async (event, data) => {
     return new Promise((resolve, reject) => {
         instances[data].window.show()
         resolve()
+    })
+})
+
+ipcMain.handle('getSMMData', async (event, data) => {
+    return new Promise((resolve, reject) => {
+
+        getSMMData().then((data) => {
+            console.log(data)
+            resolve(data)
+        })
+
     })
 })
 
@@ -377,7 +388,16 @@ ipcMain.handle('reopenWindow', async (event, id) => {
 })
 
 
-
+async function getSMMData() {
+    var installs = await getInstalls()
+    var profiles = getProfiles()
+    setDebug(true)
+    //console.log(isDebug())
+    //console.log(installs)
+    //console.log(profiles)
+    var data = { installs: installs.installs, profiles: profiles, isDebug: isDebug() }
+    return data
+}
 
 
 

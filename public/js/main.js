@@ -351,6 +351,6 @@ function UUID() {
 
 getSettings()
 
-
+window.getSMMData()
 
 addAttr(['-EpicPortal', '-NoSteamClient', '-NoMultiplayer', '-Username=herbbert', '-ResX=1000', '-ResY=1000', '-WINDOWED'])

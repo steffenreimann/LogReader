@@ -19,6 +19,8 @@
   "author": "Steffen Reimann",
   "license": "ISC",
   "dependencies": {
+    "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
     "child-process-async": "^1.0.1",
     "chokidar": "^3.5.1",
     "ejs": "^3.1.6",
@@ -27,15 +29,15 @@
     "express-session": "^1.17.1",
     "express-socket.io-session": "^1.3.5",
     "read-last-lines": "^1.8.0",
+    "satisfactory-mod-manager-api": "^2.1.4",
     "slash": "^3.0.0",
     "socket.io": ">=2.4.0",
     "text-file-follower": "^0.1.0"
   },
   "devDependencies": {
     "electron": "^12.0.2",
-    "electron-packager": "^15.1.0",
-    "electron-prebuilt": "^1.4.13",
-    "electron-rebuild": "^1.11.0"
+    "electron-packager": "^15.2.0",
+    "electron-rebuild": "2.3.5"
   },
   "bugs": {
     "url": "https://github.com/steffenreimann/LogReader/issues"
