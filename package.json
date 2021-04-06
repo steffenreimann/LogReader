@@ -24,6 +24,7 @@
     "child-process-async": "^1.0.1",
     "chokidar": "^3.5.1",
     "ejs": "^3.1.6",
+    "electron-acrylic-window": "^0.5.5",
     "electron-tabs": "^0.15.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",

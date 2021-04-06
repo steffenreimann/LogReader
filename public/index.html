@@ -14,51 +14,44 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" />
     <!-- MDB -->
     <link rel="stylesheet" href="css/mdb.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
 
 </head>
 
-<body>
-
+<body class="" style=" background-color:rgba(255, 255, 255, 0.5)">
+    <div class="" style="width: 100%; height: 100%; filter: blur(8px); -webkit-filter: blur(8px); "></div>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <nav style="-webkit-app-region: drag" class="navbar navbar-expand-lg navbar-light bg-light fixed-top bg-dark window-drag">
         <!-- Container wrapper -->
         <div class="container-fluid">
             <!-- Navbar brand -->
-            <a class="navbar-brand" href="#">UE4 Log Reader</a>
-            <button id="clearbtn" class="nav-item btn btn-outline-primary" type="button" data-ripple-color="dark">
-                Clear
-            </button>
-            <!-- Left links -->
-            <ul class="navbar-nav mr-auto mb-2 mb-lg-0">
+            <p class="navbar-brand text-light" href="#">UE4 Log Reader</p>
 
-
-                <!-- Navbar dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
-                        File
-                    </a>
-                    <!-- Dropdown menu -->
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="/download">Download</a></li>
-                        <li><a class="dropdown-item" target="_blank" href="/RawLog">Show Raw File</a></li>
-                        <li>
-                            <hr class="dropdown-divider" />
-                        </li>
-                        <li>
-                            <a class="dropdown-item" onclick="CopyPath()" href="#">copy File Path</a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
             <!-- Left links -->
-            <!-- Button trigger modal -->
-            <div class=" form-check form-switch">
-                <input class="form-check-input" type="checkbox" onchange="changeAutoScroll()" id="" checked />
-                <label class="form-check-label" for="">Auto Scroll </label>
+            <div class="d-flex input-group w-auto">
+                <div class="nav-item  data-mdb-toggle=" tooltip" data-mdb-placement="bottom"">
+
+                    <a class=" nav-link btn btn-dark btn-sm" onclick="" href="#"><i class="fas fa-angle-double-up "></i></a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link btn btn-dark btn-sm" onclick="window.minimize()" href="#"><i class="far fa-window-minimize"></i></a>
+
+                </div>
+                <div class="nav-item">
+
+                    <a class="nav-link btn btn-dark btn-sm" onclick="window.maximize()" href="#"><i class="far fa-window-maximize"></i></a>
+
+                </div>
+                <div class="nav-item">
+
+                    <a class="nav-link btn btn-dark btn-sm" onclick="window.close()" href="#"><i class="far fa-window-close"></i></a>
+                </div>
             </div>
-            <button type="button" class="btn " data-toggle="modal" data-target="#exampleModal">
-                Settings
-            </button>
+
+
+
+
+
 
 
 
@@ -70,7 +63,7 @@
 
 
 
-    <div class="card text-center mt-1">
+    <div class="card text-center mt-1 bg-dark">
         <div class="card-body">
             <p class="card-text">
                 df
@@ -78,46 +71,67 @@
 
         </div>
     </div>
-    <div id="lines" class="container" type="html"></div>
-    <div id="SMMData" class="container" type="html"></div>
-
-    <div id="instances" class="container" type="html"></div>
-
-    <div class="card-body">
-        <p class="card-text">
-        <form class="col-md d-flex input-group w-auto">
-            <input id="filePath" type="filter" class="form-control" placeholder="Path to exe or log File" value="E:/epicgames/SatisfactoryEarlyAccess/FactoryGame/Binaries/Win64/FactoryGame-Win64-Shipping.exe" aria-label="Search" />
-            <button onclick="openDialog()" class="btn btn-outline-primary" type="button" data-ripple-color="dark">
-                Search File
-            </button>
-        </form>
-
-        <form class="col-md d-flex input-group w-auto">
-            <input id="attrInput" type="filter" class="form-control" placeholder="Type query" aria-label="Search" />
-            <button onclick="addAttr()" class="btn btn-outline-primary" type="button" data-ripple-color="dark">
-                Add
-            </button>
-        </form>
 
 
+    <div class="container  bg-dark">
+        <!-- Content here -->
+
+        <div class="card col-md bg-dark">
+            <div class="card-header text-light">
+                Attr
+            </div>
+            <div id="SMMData" class="card-body" type="html"></div>
+        </div>
+        <div class="card col-md bg-dark">
+            <div class="card-body ">
+
+                <h5 class="card-title">Attr</h5>
+
+                <form class="col-md d-flex input-group w-auto">
+                    <input id="attrInput" type="filter" class="form-control text-light bg-dark" placeholder="Type query" aria-label="Search" />
+                    <button onclick="addAttr()" class="btn btn-outline-success" type="button" data-ripple-color="dark">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </form>
+
+                <div class="row">
+                    <div class="col-md d-flex input-group w-auto">
+                        <form class="col-md d-flex input-group w-auto">
+
+                            <button onclick="addAttr(['-EpicPortal', '-NoSteamClient', '-NoMultiplayer', '-Username=herbbert', '-ResX=1000', '-ResY=1000', '-WINDOWED'])" class="btn btn-dark" type="button" data-ripple-color="dark">
+                                Add default
+                            </button>
+                            <button onclick="" class="btn btn-dark" type="button" data-ripple-color="dark">
+                                clear
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
 
 
-        <div class="row">
-            <div class="col-md d-flex input-group w-auto">
-                <button onclick="addAttr(['-EpicPortal', '-NoSteamClient', '-NoMultiplayer', '-Username=herbbert', '-ResX=1000', '-ResY=1000', '-WINDOWED'])" class="btn btn-outline-primary" type="button" data-ripple-color="dark">
-                    Add default
-                </button>
+                <!-- Default switch -->
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" onchange="window.setAlwaysOnTop()" />
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Set Aways on Top</label>
+                </div>
+
+                <div id="attr" class="row">
+
+                </div>
+
+
+
+                <div class="card-footer"><button type="button" id="startGameBTN" class="btn btn-primary">Start</button></div>
+                <div class="spinner-border m-5" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+
+
             </div>
         </div>
-        <div id="attr" class="row">
-
-        </div>
-        <button type="button" id="startGameBTN" class="btn btn-primary">Start</button>
-        </p>
 
     </div>
-
-
 
 
 

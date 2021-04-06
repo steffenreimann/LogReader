@@ -51,6 +51,31 @@ window.getSMMData = async function () {
     //return result
 }
 
+window.maximize = async function () {
+    const result = await ipcRenderer.invoke('transformWindow', 'maximize');
+}
+
+window.minimize = async function () {
+    const result = await ipcRenderer.invoke('transformWindow', 'minimize');
+}
+
+window.close = async function () {
+    const result = await ipcRenderer.invoke('transformWindow', 'close');
+}
+
+var ontop = false
+window.setAlwaysOnTop = async function () {
+
+    const result = await ipcRenderer.invoke('setAlwaysOnTop', !ontop);
+    ontop = !ontop
+}
+
+window.addWatchedFiles = async function (data) {
+    
+    const result = await ipcRenderer.invoke('addWatchedFiles', data);
+}
+
+
 async function getHTMLView(data) {
     const result = await ipcRenderer.invoke('getHTMLView', data);
     return result
@@ -84,4 +109,8 @@ async function renderInstances(instances) {
     })
 }
 
+
+
 console.log('Preload are loaded!');
+
+

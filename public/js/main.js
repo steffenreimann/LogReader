@@ -187,11 +187,34 @@ var searchBTN = document.getElementById('searchBTN')
 searchBTN.addEventListener("click", search, false);
 
 
-var clearbtn = document.getElementById('clearbtn')
-clearbtn.addEventListener("click", clear, false);
+
 
 var clearbtn = document.getElementById('startGameBTN')
 clearbtn.addEventListener("click", startGame, false);
+
+var installSelector = document.getElementById('changeInstall')
+clearbtn.addEventListener("click", startGame, false);
+
+
+
+var usedInstallPath = ''
+
+
+function changeInstall(element) {
+    const bsCollapse = new mdb.Collapse(document.getElementById('collapseCustomInstall'), {
+        toggle: false,
+    })
+
+    if (element.value == 'custom') {
+        console.log('Want to use custom path')
+        bsCollapse.show()
+    } else {
+        console.log('Want to use ', element.value)
+        bsCollapse.hide()
+        usedInstallPath = element.value
+    }
+}
+
 
 
 const copyToClipboard = str => {
@@ -252,8 +275,8 @@ function openDialog(params) {
         console.log('openDialog ', result)
 
         if (!result.canceled) {
-            currentFile = result
-            document.getElementById('filePath').value = result.filePaths[0]
+            usedInstallPath = result
+            document.getElementById('filePath').value = usedInstallPath
         }
         if (result.ext == '.exe') {
 
@@ -346,6 +369,49 @@ function UUID() {
     return ff() + ff(true) + ff(true) + ff();
 }
 
+
+
+document.addEventListener('drop', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    var out = []
+    Object.keys(event.dataTransfer.files).forEach(function (key) {
+        console.log('Key : ', key, ', Value : ', event.dataTransfer.files[key])
+
+        out.push(event.dataTransfer.files[key].path)
+    })
+    console.log('addWatchedFiles: ', out)
+    window.addWatchedFiles(out)
+    //const copy = JSON.parse(JSON.stringify(event.dataTransfer.files));
+    //console.log('File Path of dragged files: ', event.dataTransfer.files)
+    //console.log('typeof: ', typeof event.dataTransfer.files)
+
+
+});
+
+document.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+});
+
+document.addEventListener('dragenter', (event) => {
+    console.log('File is in the Drop Space');
+});
+
+document.addEventListener('dragleave', (event) => {
+    console.log('File has left the Drop Space');
+});
+
+async function copyObj(data) {
+    var files = []
+    for (const f of event.dataTransfer.files) {
+        // Using the path attribute to get absolute file path
+        //console.log('File Path of dragged files: ', f.path)
+        files.push(f.path)
+    }
+
+
+}
 
 
 

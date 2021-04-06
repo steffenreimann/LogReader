@@ -1,0 +1,19 @@
+button {
+    -webkit-app-region: no-drag;
+}
+
+a {
+    -webkit-app-region: no-drag;
+}
+
+::-webkit-scrollbar {
+    background-color: rgb(85, 85, 85);
+    width: .8em
+}
+
+::-webkit-scrollbar-thumb:window-inactive,
+::-webkit-scrollbar-thumb {
+    background: rgb(165, 165, 165)
+}
+
+

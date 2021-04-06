@@ -15,7 +15,8 @@ const ut = require('./utils.js')
 
 
 
-var watcher
+
+module.exports.watcher
 const { dialog, app, BrowserWindow, Menu, ipcMain, globalShortcut, screen } = electron;
 var readers = {}
 var instances = {}
@@ -37,7 +38,7 @@ var newReader = async (file, cb) => {
         //cb(line)
         if (line.search('Log file closed') != -1) {
             console.log('Log file closed watch file now')
-            watcher.add(file);
+            module.exports.watcher.add(file);
         }
         if (readers[hashedPath].window != 'undefined') {
             readers[hashedPath].line.emit('change', line);
@@ -169,23 +170,24 @@ var fileChecker = () => {
 
 
 
-    watcher = chokidar.watch(files, {
+    module.exports.watcher = chokidar.watch(files, {
         persistent: true,
         usePolling: false,
         interval: 1000
     });
 
-    watcher.on('add', path => console.log(`File ${path} has been added`))
-    watcher.on('change', path => {
+    module.exports.watcher.on('add', path => console.log(`File ${path} has been added`))
+    module.exports.watcher.on('change', path => {
         console.log('File Changed!')
 
 
         console.log('New Reader Call!!')
-        watcher.unwatch(path);
+        module.exports.watcher.unwatch(path);
         newReader(path)
 
     })
-    watcher.on('unlink', path => console.log(`File ${path} has been removed`));
+    module.exports.watcher.on('unlink', path => console.log(`File ${path} has been removed`));
+
 
 
 }
@@ -247,6 +249,10 @@ var findFilter = (filter, data) => {
 }
 
 
+var startMultiGames = (index) => {
+    console.log('Starting Games = ', index)
+}
+
 
 
 
@@ -256,5 +262,6 @@ module.exports = {
     newReader,
     fileChecker,
     makeWindow,
-    startGame
+    startGame,
+    startMultiGames
 };

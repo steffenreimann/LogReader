@@ -4,11 +4,12 @@ const url = require('url');
 
 // SET ENV
 process.env.NODE_ENV = 'development';
-const { dialog, app, BrowserWindow, Menu, ipcMain, globalShortcut, screen } = electron;
+const { dialog, app, Menu, BrowserWindow, Tray, ipcMain, globalShortcut, screen, nativeTheme } = electron;
 
 
 app.on('ready', function () {
 
+    nativeTheme.themeSource = 'dark'
     const displays = screen.getAllDisplays()
     const externalDisplay = displays.find((display) => {
         return display.bounds.x !== 0 || display.bounds.y !== 0
@@ -19,14 +20,18 @@ app.on('ready', function () {
 
     // Create new window
     mainWindow = new BrowserWindow({
+        alwaysOnTop: false,
         width: 1000,
         height: 500,
         title: 'Electon Example',
+        transparent: false,
+        frame: false,
         webPreferences: {
             contextIsolation: false,
             nodeIntegration: false,
             preload: path.join(__dirname, 'mainpreload.js')
-        }
+        },
+
     });
 
     mainWindow.loadURL(url.format({
@@ -38,15 +43,26 @@ app.on('ready', function () {
 
     // Quit app when closed
     mainWindow.on('closed', function () {
-        app.quit();
+        app.exit(0);
     });
 
+    let tray = null;
+    mainWindow.on('minimize', function (event) {
+        event.preventDefault();
+        mainWindow.hide();
+        tray = createTray();
+    });
+
+    mainWindow.on('restore', function (event) {
+        mainWindow.show();
+        tray.destroy();
+    });
     // Build menu from template
-    const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
+    // const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
     // Insert menu
-    Menu.setApplicationMenu(mainMenu);
-
-
+    //Menu.setApplicationMenu(mainMenu);
+    mainWindow.toggleDevTools();
+    mainWindow.setOpacity(0.9)
 });
 
 
@@ -54,7 +70,6 @@ app.on('will-quit', () => {
 
 
 })
-
 // Create menu template
 const mainMenuTemplate = [
     // Each object is a dropdown
@@ -80,13 +95,10 @@ const mainMenuTemplate = [
         ]
     }
 ];
-
 // If OSX, add empty object to menu
 if (process.platform == 'darwin') {
     // mainMenuTemplate.unshift({});
 }
-
-
 // Add developer tools option if in dev
 if (process.env.NODE_ENV !== 'production') {
     mainMenuTemplate.push({
@@ -106,8 +118,6 @@ if (process.env.NODE_ENV !== 'production') {
         ]
     });
 }
-
-
 // This is the Test Function that you can call from Menu
 var i = 0
 function testFunction(params) {
@@ -115,8 +125,53 @@ function testFunction(params) {
     //console.log('You Click in Menu the Test Button i = ', i);
 }
 
+function createTray() {
+    let appIcon = new Tray(path.join(__dirname, "cloud_fun.ico"));
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: 'Show', click: function () {
+                mainWindow.show();
+            }
+        },
+        {
+            label: 'Exit', click: function () {
+                app.isQuiting = true;
+                app.exit();
+            }
+        }
+    ]);
 
+    appIcon.on('double-click', function (event) {
+        mainWindow.show();
+    });
+    appIcon.setToolTip('Tray Tutorial');
+    appIcon.setContextMenu(contextMenu);
+    return appIcon;
+}
 
+var KeyRefs = {}
+app.whenReady().then(() => {
+    for (let index = 0; index < 10; index++) {
+        // Register a 'CommandOrControl+X' shortcut listener.
+        KeyRefs[index] = globalShortcut.register(`CmdOrCtrl+Alt+Shift+${index}`, () => {
+            console.log('is pressed ', index)
+            ft.startMultiGames(index)
+        })
+
+        if (!KeyRefs[index]) {
+            console.log('registration failed')
+        }
+    }
+
+})
+
+app.on('will-quit', () => {
+    // Unregister a shortcut.
+    //globalShortcut.unregister('CommandOrControl+X')
+
+    // Unregister all shortcuts.
+    globalShortcut.unregisterAll()
+})
 
 
 
@@ -128,6 +183,7 @@ var io = require('socket.io')(httpServer);
 var fs = require('fs');
 expressapp.use(express.static(__dirname + '/public'));
 const ft = require('./fileTools.js')
+const st = require('./settingsTool.js')
 var follow = require('text-file-follower');
 //var smmapi = require('satisfactory-mod-manager-api');
 const { callbackify } = require('util');
@@ -145,6 +201,12 @@ var { getProfiles, getInstalls, createProfile, deleteProfile, renameProfile, isD
 
 config.updateRate
 config.port
+
+st.init('LogReader').then((resolveData) => {
+    console.log(resolveData)
+    st.setSettings({ App: 'Diese App ist nice', duduM: 'JONGE' }).then((resolveData) => { console.log(resolveData) }, (rejectData) => { console.log('Cant write Settings File!!! Error= ', rejectData) })
+
+}, (rejectData) => { console.log('Cant Init Settings File System!!! Error= ', rejectData) })
 
 
 
@@ -324,6 +386,32 @@ ipcMain.handle('windowShow', async (event, data) => {
         resolve()
     })
 })
+ipcMain.handle('transformWindow', async (event, data) => {
+    return new Promise((resolve, reject) => {
+        switch (data) {
+            case 'maximize':
+                if (!mainWindow.isMaximized()) {
+                    mainWindow.maximize();
+                } else {
+                    mainWindow.unmaximize();
+                }
+                resolve()
+                break;
+            case 'minimize':
+                mainWindow.minimize();
+                resolve()
+                break
+            case 'close':
+                mainWindow.close()
+                resolve()
+                break
+            default:
+                resolve()
+                break;
+        }
+
+    })
+})
 
 ipcMain.handle('getSMMData', async (event, data) => {
     return new Promise((resolve, reject) => {
@@ -385,6 +473,15 @@ ipcMain.handle('reopenWindow', async (event, id) => {
             });
         })
     })
+})
+ipcMain.handle('setAlwaysOnTop', async (event, data) => {
+    mainWindow.setAlwaysOnTop(data)
+})
+
+ipcMain.handle('addWatchedFiles', async (event, data) => {
+    console.log(data)
+    console.log(ft.watcher)
+    ft.watcher.add(data);
 })
 
 
@@ -510,10 +607,6 @@ function checkFGLogFile(callback) {
     }
 }
 
-
-function openDialog(cb) {
-
-}
 
 
 
