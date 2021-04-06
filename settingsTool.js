@@ -66,14 +66,74 @@ var setSettings = (data) => {
     })
 }
 
+var setKey = (data) => {
+    return new Promise((resolve, reject) => {
+        console.log(module.exports.settingFilePath)
+
+        getSettings().then((settings) => {
+
+            setObjKeys(settings, data).then((newSettings) => {
+
+                console.log('Save Setting to file =', newSettings)
+
+                fs.writeFile(module.exports.settingFilePath, JSON.stringify(newSettings), { recursive: true }, (fileERR) => {
+                    if (fileERR) {
+                        console.log('File write error')
+                        reject(fileERR)
+                    } else {
+                        console.log('reading file after write')
+                        getSettings().then((settings) => { resolve(settings) }, (errr) => { reject(errr) })
+                    }
+                })
+
+            })
+        }, reject)
+    })
+}
+
+var getKey = (data) => {
+    return new Promise((resolve, reject) => {
+        console.log(module.exports.settingFilePath)
+
+        getSettings().then((settings) => {
+            resolve(index(settings, data))
+        }, reject)
+    })
+}
+
 var dir = (dirPath) => {
     return new Promise((resolve, reject) => {
         fs.mkdir(dirPath, (dirERR) => { if (dirERR) { if (dirERR.code == 'EEXIST') { resolve(null) } else { reject(dirERR) } } else { resolve(null) } })
     })
 }
 
+function index(obj, is, value) {
+    if (typeof is == 'string')
+        return index(obj, is.split('.'), value);
+    else if (is.length == 1 && value !== undefined)
+        return obj[is[0]] = value;
+    else if (is.length == 0)
+        return obj;
+    else
+        return index(obj[is[0]], is.slice(1), value);
+}
+
+var setObjKeys = (settings, newData) => {
+    return new Promise((resolve, reject) => {
+
+        Object.keys(newData).forEach(function (key) {
+            index(settings, key, newData[key])
+            console.log('new index func = ', settings)
+        })
+        console.log('resolve setobjkeys = ', settings)
+        resolve(settings)
+    })
+}
+
 module.exports = {
     init,
     getSettings,
-    setSettings
+    setSettings,
+    setKey,
+    getKey
 };

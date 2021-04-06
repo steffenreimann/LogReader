@@ -202,9 +202,31 @@ var { getProfiles, getInstalls, createProfile, deleteProfile, renameProfile, isD
 config.updateRate
 config.port
 
+
+var changeSettings = { 'dudu': 'junge wie dumm', 'test.one': 'du loster dude', 'test.two': 'jaaa moin', 'lol': { junge: 'und gewhts ? ' } }
+
+
 st.init('LogReader').then((resolveData) => {
     console.log(resolveData)
-    st.setSettings({ App: 'Diese App ist nice', duduM: 'JONGE' }).then((resolveData) => { console.log(resolveData) }, (rejectData) => { console.log('Cant write Settings File!!! Error= ', rejectData) })
+
+    st.setSettings({ App: 'Diese App ist nice', dudu: 'JONGE', test: { one: 'hallo', two: 'welt' } }).then((resolveData) => {
+        console.log(resolveData)
+        st.setKey(changeSettings).then((data) => {
+            console.log('Change settings by keys = ', data)
+
+
+
+            st.getKey('lol.junge').then((data) => {
+                console.log('get settings by key = ', data)
+            }, (err) => { console.log('get settings by key error = ', err) })
+
+
+        }, () => { })
+
+    }, (rejectData) => { console.log('Cant write Settings File!!! Error= ', rejectData) })
+
+
+
 
 }, (rejectData) => { console.log('Cant Init Settings File System!!! Error= ', rejectData) })
 
