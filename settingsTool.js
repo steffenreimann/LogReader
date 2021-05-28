@@ -1,15 +1,25 @@
 var path = require('path')
 var fs = require('fs')
 
+var EventEmitter = require('events').EventEmitter;
+
+var ev = new EventEmitter();
+
+
 
 module.exports.settingFilePath = ''
 module.exports.data = {}
+module.exports.isInit = false
+
+
+
 
 var init = (App) => {
     return new Promise((resolve, reject) => {
         var AppName = App
         module.exports.settingFilePath = path.join(process.env.LOCALAPPDATA, AppName, `settings.json`)
         getSettings().then((resolveData) => {
+            watchSttingsFile(module.exports.settingFilePath)
             resolve(resolveData)
         }, (err) => {
             if (err.code == 'ENOENT') {
@@ -19,11 +29,16 @@ var init = (App) => {
                     } else {
                         fs.writeFile(module.exports.settingFilePath, JSON.stringify({ App: AppName }), { recursive: true }, (fileERR) => {
                             if (fileERR) {
-                                console.log('File write error')
+                                //console.log('File write error')
                                 reject(fileERR)
                             } else {
-                                console.log('reading file after write')
-                                getSettings().then((settings) => { resolve(settings) }, (errr) => { reject(errr) })
+                                //console.log('reading file after write')
+                                getSettings().then((settings) => {
+                                    module.exports.isInit = true
+                                    watchSttingsFile(module.exports.settingFilePath)
+                                    resolve(settings)
+
+                                }, (errr) => { reject(errr) })
                             }
                         })
                     }
@@ -107,6 +122,19 @@ var dir = (dirPath) => {
     })
 }
 
+
+
+
+function watchSttingsFile(file) {
+    //console.log("watchSttingsFile ");
+    fs.watchFile(file, { bigint: false, persistent: true, interval: 4000 }, (curr, prev) => {
+        //console.log("Settings File changed = ");
+        //console.log("Previous Modified Time", prev.mtime);
+        //console.log("Current Modified Time", curr.mtime);
+        getSettings().then((settings) => { module.exports.ev.emit('changed', settings) }, () => { })
+    });
+}
+
 function index(obj, is, value) {
     if (typeof is == 'string')
         return index(obj, is.split('.'), value);
@@ -123,9 +151,9 @@ var setObjKeys = (settings, newData) => {
 
         Object.keys(newData).forEach(function (key) {
             index(settings, key, newData[key])
-            console.log('new index func = ', settings)
+            //console.log('new index func = ', settings)
         })
-        console.log('resolve setobjkeys = ', settings)
+        //console.log('resolve setobjkeys = ', settings)
         resolve(settings)
     })
 }
@@ -135,5 +163,6 @@ module.exports = {
     getSettings,
     setSettings,
     setKey,
-    getKey
+    getKey,
+    ev
 };

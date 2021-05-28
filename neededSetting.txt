@@ -1,0 +1,5 @@
+Pathde zu files die überwacht werden sollen = Objekt 
+
+ Objekt Item => Objekt => Path: { path: string, autoWindowOpen: Bool, autoScroll: Bool } 
+
+

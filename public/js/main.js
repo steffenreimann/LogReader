@@ -266,7 +266,7 @@ function startGame(params) {
 
 
 
-var currentFile = { filePaths: ['E:/epicgames/SatisfactoryEarlyAccess/FactoryGame/Binaries/Win64/FactoryGame-Win64-Shipping.exe'], ext: '.exe' }
+var currentFile = { filePaths: ['G:/Software/Games/EpicGames/SatisfactoryEarlyAccess/FactoryGame.exe'], ext: '.exe' }
 var currentAttr = []
 
 
@@ -415,8 +415,6 @@ async function copyObj(data) {
 
 
 
-getSettings()
 
-window.getSMMData()
 
 addAttr(['-EpicPortal', '-NoSteamClient', '-NoMultiplayer', '-Username=herbbert', '-ResX=1000', '-ResY=1000', '-WINDOWED'])

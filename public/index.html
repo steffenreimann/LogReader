@@ -82,6 +82,7 @@
             </div>
             <div id="SMMData" class="card-body" type="html"></div>
         </div>
+
         <div class="card col-md bg-dark">
             <div class="card-body ">
 
@@ -129,6 +130,16 @@
 
 
             </div>
+        </div>
+
+        <input onclick="window.changeRAWexecPath()" id="RAWexecPath" type="filter" class="form-control text-light bg-dark" onchange="" placeholder="Path to exe or log File" value="<%= settings.WatchFiles[key].path %>" aria-label="Search" />
+
+        <div class="card col-md bg-dark">
+            <div class="card-header text-light">
+                Watched Files
+                <button onclick="window.addWatchedFiles()">Add File</button>
+            </div>
+            <div id="WatchedFiles" class="card-body" type="html"></div>
         </div>
 
     </div>

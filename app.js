@@ -4,7 +4,7 @@ const url = require('url');
 
 // SET ENV
 process.env.NODE_ENV = 'development';
-const { dialog, app, Menu, BrowserWindow, Tray, ipcMain, globalShortcut, screen, nativeTheme } = electron;
+const { dialog, app, Menu, BrowserWindow, Tray, ipcMain, globalShortcut, screen, nativeTheme, webContents } = electron;
 
 
 app.on('ready', function () {
@@ -21,11 +21,11 @@ app.on('ready', function () {
     // Create new window
     mainWindow = new BrowserWindow({
         alwaysOnTop: false,
-        width: 1000,
-        height: 500,
-        title: 'Electon Example',
+        width: 1500,
+        height: 1500,
+        title: 'LogReader',
         transparent: false,
-        frame: false,
+        frame: true,
         webPreferences: {
             contextIsolation: false,
             nodeIntegration: false,
@@ -38,7 +38,7 @@ app.on('ready', function () {
         pathname: 'localhost:3000',
         protocol: 'http:',
         slashes: true,
-        title: 'Electron Example'
+        title: 'LogReader'
     }));
 
     // Quit app when closed
@@ -144,7 +144,7 @@ function createTray() {
     appIcon.on('double-click', function (event) {
         mainWindow.show();
     });
-    appIcon.setToolTip('Tray Tutorial');
+    appIcon.setToolTip('LogReader');
     appIcon.setContextMenu(contextMenu);
     return appIcon;
 }
@@ -183,7 +183,8 @@ var io = require('socket.io')(httpServer);
 var fs = require('fs');
 expressapp.use(express.static(__dirname + '/public'));
 const ft = require('./fileTools.js')
-const st = require('./settingsTool.js')
+//const st = require('./settingsTool.js')
+const settings = require('easy-nodejs-app-settings')
 var follow = require('text-file-follower');
 //var smmapi = require('satisfactory-mod-manager-api');
 const { callbackify } = require('util');
@@ -195,7 +196,7 @@ const config = require('./config.js').config
 
 const { exec, spawn } = require('child-process-async');
 
-var { getProfiles, getInstalls, createProfile, deleteProfile, renameProfile, isDebug, setDebug } = require('satisfactory-mod-manager-api')
+//var { getProfiles, getInstalls, isDebug, setDebug } = require('satisfactory-mod-manager-api')
 
 
 
@@ -206,26 +207,28 @@ config.port
 var changeSettings = { 'dudu': 'junge wie dumm', 'test.one': 'du loster dude', 'test.two': 'jaaa moin', 'lol': { junge: 'und gewhts ? ' } }
 
 
-st.init('LogReader').then((resolveData) => {
-    console.log(resolveData)
 
-    st.setSettings({ App: 'Diese App ist nice', dudu: 'JONGE', test: { one: 'hallo', two: 'welt' } }).then((resolveData) => {
-        console.log(resolveData)
-        st.setKey(changeSettings).then((data) => {
-            console.log('Change settings by keys = ', data)
+settings.init('LogReader').then((resolveData) => {
+    console.log('Settings File Succsessfull Init.')
+    //Assign the event handler to an event:
+    settings.ev.on('changed', (data) => {
+        console.log('Event on changed = ', data)
+        var windows = webContents.getAllWebContents()
+        windows.forEach(win => {
+            //console.log(win);
+            win.send('settingsChanged', data);
+        });
+    });
+    //console.log(resolveData)
 
-
-
-            st.getKey('lol.junge').then((data) => {
-                console.log('get settings by key = ', data)
-            }, (err) => { console.log('get settings by key error = ', err) })
-
-
-        }, () => { })
-
-    }, (rejectData) => { console.log('Cant write Settings File!!! Error= ', rejectData) })
-
-
+    //settings.setSettings({ App: 'Diese App ist nice', dudu: 'JONGE', test: { one: 'hallo', two: 'welt' } }).then((resolveData) => {
+    //    settings.setKey(changeSettings).then((data) => {
+    //        console.log('Change settings by keys = ', data)
+    //        settings.getKey('lol.junge').then((data) => {
+    //            console.log('get settings by key = ', data)
+    //        }, (err) => { console.log('get settings by key error = ', err) })
+    //    }, () => { })
+    //}, (rejectData) => { console.log('Cant write Settings File!!! Error= ', rejectData) })
 
 
 }, (rejectData) => { console.log('Cant Init Settings File System!!! Error= ', rejectData) })
@@ -344,11 +347,6 @@ function FindFilter(data, callback) {
     });
 }
 
-
-
-
-
-
 function count(obj) { return Object.keys(obj).length; }
 
 ipcMain.on('newLogReader', (event, data) => {
@@ -376,6 +374,14 @@ async function instancesChanged() {
     return newObj
     return newArr;
 }
+
+
+
+ipcMain.handle('openDialog', async () => {
+    var files = await dialog.showOpenDialog(mainWindow, { properties: ['openFile'] })
+    return files.filePaths[0]
+})
+
 
 ipcMain.handle('getInstances', async (event, arg) => {
     console.log('getInstances = ', instances)
@@ -438,11 +444,11 @@ ipcMain.handle('transformWindow', async (event, data) => {
 ipcMain.handle('getSMMData', async (event, data) => {
     return new Promise((resolve, reject) => {
 
-        getSMMData().then((data) => {
-            console.log(data)
-            resolve(data)
-        })
-
+        //getSMMData().then((data) => {
+        //    console.log(data)
+        //    resolve(data)
+        //})
+        resolve()
     })
 })
 
@@ -500,12 +506,83 @@ ipcMain.handle('setAlwaysOnTop', async (event, data) => {
     mainWindow.setAlwaysOnTop(data)
 })
 
-ipcMain.handle('addWatchedFiles', async (event, data) => {
-    console.log(data)
-    console.log(ft.watcher)
-    ft.watcher.add(data);
+
+ipcMain.handle('addWatchedFiles', async (event, file) => {
+    console.log('addWatchedFiles ', file)
+
+    var key = await settings.getKey('WatchFiles')
+
+    key[UUID()] = { path: file, autoWindowOpen: true, autoScroll: true, watch: true }
+
+    await settings.setKey({ "WatchFiles": key })
+
+    ft.watcher.add(file);
+
 })
 
+ipcMain.handle('loadSettings', async () => {
+    return await settings.getSettings()
+})
+
+
+
+
+ipcMain.handle('deleteFile', async (event, id) => {
+    var key = await settings.getKey('WatchFiles')
+    console.log('deleteFile = ', key[id]);
+    delete key[id];
+    await settings.setKey({ "WatchFiles": key })
+    return 1
+})
+
+ipcMain.handle('toggleWatch', async (event, id) => {
+    var key = await settings.getKey('WatchFiles')
+    console.log(id);
+    console.log(key);
+    console.log(key[id]);
+    key[id].watch = !key[id].watch
+    await settings.setKey({ "WatchFiles": key })
+
+    console.log(ft.watcher.getWatched())
+
+    if (key[id].watch) {
+        ft.watcher.add(key[id].path);
+    } else {
+        await ft.watcher.unwatch(key[id].path);
+    }
+
+    return key[id].watch
+})
+
+ipcMain.handle('changeFilePath', async (event, id, file) => {
+    var key = await settings.getKey('WatchFiles')
+    await ft.watcher.unwatch(key[id].path);
+    key[id].path = file
+    await settings.setKey({ "WatchFiles": key })
+    ft.watcher.add(key[id].path);
+    return key[id]
+})
+
+ipcMain.handle('openRAW', async (event, id) => {
+    var key = await settings.getKey('WatchFiles')
+
+    //var path = settings.data.RAWexecPath.replace(/ /g, "\\ ");
+    //var cmd = `start "${settings.data.RAWexecPath}" "${key[id].path}"`
+    //var cmd = `"${settings.data.RAWexecPath}" "${key[id].path}"`
+    //console.log('cmd', cmd);
+
+    spawn(settings.data.RAWexecPath, [`${key[id].path}`]);
+
+    //script = exec(cmd);
+    // script = exec('start', "${settings.data.RAWexecPath}", "${key[id].path}");
+    //script = exec('start ' + settings.data.RAWexecPath + ' ' + key[id].path);
+    return 1
+})
+
+ipcMain.handle('changeRAWexecPath', async (event, path) => {
+    await settings.setKey({ "RAWexecPath": path })
+    return 1
+})
 
 async function getSMMData() {
     var installs = await getInstalls()
@@ -636,6 +713,7 @@ httpServer.listen(config.port);
 console.log('Log Server Running on http://localhost:' + config.port)
 
 ft.fileChecker()
- // getLastLines(LogPath, len).then((lastLines) => {
-        // //console.log(lastLines[0])
-   // })
+// getLastLines(LogPath, len).then((lastLines) => {
+// //console.log(lastLines[0])
+// })
+

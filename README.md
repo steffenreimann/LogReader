@@ -4,4 +4,3 @@
 
  That means you can run the log reader permanently between several satisfactory sessions. 
 
-

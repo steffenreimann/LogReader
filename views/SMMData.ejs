@@ -1,43 +1,14 @@
 <div class="">
 
-
-
-
-
-    <select class="form-control text-light bg-dark" onchange="changeInstall(this)">
-        <% data.installs.forEach(function( install){ %>
-
-            <option class="form-control text-light bg-dark" value="<%= install.installLocation %>">
-                <%= install.name %>
-            </option>
-
-            <% }) %>
-                <option class="form-control text-light bg-dark" value="custom">
-                    custom
-                </option>
-    </select>
-
     <!-- Collapsed content -->
     <div class="collapse" id="collapseCustomInstall">
         <form class="col-md d-flex input-group w-auto">
-            <input id="filePath" type="filter" class="form-control text-light bg-dark" placeholder="Path to exe or log File" value="E:/epicgames/SatisfactoryEarlyAccess/FactoryGame/Binaries/Win64/FactoryGame-Win64-Shipping.exe" aria-label="Search" />
+            <input id="filePath" type="filter" class="form-control text-light bg-dark" placeholder="Path to exe or log File" value="G:/Software/Games/EpicGames/SatisfactoryEarlyAccess/FactoryGame.exe" aria-label="Search" />
             <button onclick="openDialog()" class="btn btn-outline-primary text-light" type="button" data-ripple-color="dark">
                 Search File
             </button>
         </form>
     </div>
-
-    <select class="form-control text-light bg-dark">
-
-        <% data.profiles.forEach(function( profile){ %>
-
-            <option class="form-control text-light bg-dark" value="<%= profile.name %>">
-                <%= profile.name %>
-            </option>
-
-            <% }) %>
-
-    </select>
 
 
 
