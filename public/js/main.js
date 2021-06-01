@@ -182,18 +182,18 @@ function search() {
     //window.find(SearchString)
 }
 
-var searchInput = document.getElementById('search')
-var searchBTN = document.getElementById('searchBTN')
-searchBTN.addEventListener("click", search, false);
+//var searchInput = document.getElementById('search')
+//var searchBTN = document.getElementById('searchBTN')
+//searchBTN.addEventListener("click", search, false);
 
 
 
 
-var clearbtn = document.getElementById('startGameBTN')
-clearbtn.addEventListener("click", startGame, false);
-
-var installSelector = document.getElementById('changeInstall')
-clearbtn.addEventListener("click", startGame, false);
+//var clearbtn = document.getElementById('startGameBTN')
+//clearbtn.addEventListener("click", startGame, false);
+//
+//var installSelector = document.getElementById('changeInstall')
+//clearbtn.addEventListener("click", startGame, false);
 
 
 

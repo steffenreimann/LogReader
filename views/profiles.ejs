@@ -1,0 +1,24 @@
+<div class="">
+
+    <div class="input-group mb-3">
+        <select id="profiles-select" class="form-control text-light bg-dark form-select select" onchange="window.changeProfile()">
+            <% Object.keys(settings.profiles).forEach(function( key){ %>
+                <option value="<%= key %>" <% if (key==settings.selectedProfile) { %> selected <% } %> >
+                        <%= settings.profiles[key].ProfileName %>
+                </option>
+                <% }) %>
+        </select>
+
+
+        <input id="changeProfileName" type="filter" class="form-control text-light bg-dark" onchange="window.changeProfileName(this)" placeholder="Path to exe or log File" value="<%= settings.profiles[settings.selectedProfile].ProfileName %>" aria-label="Search" />
+
+
+
+
+        <button class="btn btn-outline-light" onclick="window.addProfile()">New</button>
+        <button class="btn btn-outline-danger" onclick="window.removeProfile()">Delete</button>
+
+
+    </div>
+
+</div>

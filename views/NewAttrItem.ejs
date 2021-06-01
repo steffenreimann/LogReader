@@ -1,0 +1,11 @@
+<% Object.keys(profile.args).forEach(function( key){ console.log(profile.args[key]) %>
+    <div>
+        <div class=" input-group mb-3">
+            <input onchange="window.changeAttribute('<%- key %>', this)" class="form-control text-light bg-dark" value="<%- profile.args[key] %>" data-mdb-ripple-color="dark" />
+            <button onclick="window.removeAttribute('<%- key %>')" class="btn btn-dark btn-outline-danger" type="button" data-ripple-color="dark">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+    </div>
+    <% }) %>

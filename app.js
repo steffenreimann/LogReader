@@ -188,7 +188,7 @@ const settings = require('easy-nodejs-app-settings')
 var follow = require('text-file-follower');
 //var smmapi = require('satisfactory-mod-manager-api');
 const { callbackify } = require('util');
-
+const crypto = require('crypto');
 
 const { exit } = require('process');
 
@@ -211,6 +211,7 @@ var changeSettings = { 'dudu': 'junge wie dumm', 'test.one': 'du loster dude', '
 settings.init('LogReader').then((resolveData) => {
     console.log('Settings File Succsessfull Init.')
     //Assign the event handler to an event:
+    ft.fileChecker(settings.data)
     settings.ev.on('changed', (data) => {
         console.log('Event on changed = ', data)
         var windows = webContents.getAllWebContents()
@@ -366,10 +367,10 @@ ipcMain.on('newLogReader', (event, data) => {
 async function instancesChanged() {
     var newArr = []
     var newObj = {}
-    Object.keys(instances).forEach(function (key) {
-        console.log('Key : ' + key + ', Value : ' + instances[key].LogPath)
-        newArr.push({ id: key, LogPath: instances[key].LogPath, data: instances[key].data, WindowOpen: instances[key].WindowOpen })
-        newObj[key] = { id: key, LogPath: instances[key].LogPath, data: instances[key].data, WindowOpen: instances[key].WindowOpen }
+    Object.keys(ft.instances).forEach(function (key) {
+        console.log('Key : ' + key + ', Value : ' + ft.instances[key].LogPath)
+        newArr.push({ id: key, LogPath: ft.instances[key].LogPath, data: ft.instances[key].data, WindowOpen: ft.instances[key].WindowOpen })
+        newObj[key] = { id: key, LogPath: ft.instances[key].LogPath, data: ft.instances[key].data, WindowOpen: ft.instances[key].WindowOpen }
     })
     return newObj
     return newArr;
@@ -382,19 +383,18 @@ ipcMain.handle('openDialog', async () => {
     return files.filePaths[0]
 })
 
-
-ipcMain.handle('getInstances', async (event, arg) => {
-    console.log('getInstances = ', instances)
-    return instances
-    return instancesChanged();
+ipcMain.handle('getinstances', async (event, arg) => {
+    console.log('getinstances = ', ft.instances)
+    return ft.instances
+    return ft.instancesChanged();
 })
 
 ipcMain.handle('quitInstance', async (event, id) => {
     console.log('quitInstance = ', id)
-    instances[id].window.close();
-    instances[id].process.kill('SIGINT');
-    return instances
-    return instancesChanged();
+    ft.instances[id].window.close();
+    ft.instances[id].process.kill('SIGINT');
+    return ft.instances
+    return ft.instancesChanged();
 })
 
 ipcMain.handle('getHTMLView', async (event, data) => {
@@ -410,10 +410,11 @@ ipcMain.handle('getHTMLView', async (event, data) => {
 
 ipcMain.handle('windowShow', async (event, data) => {
     return new Promise((resolve, reject) => {
-        instances[data].window.show()
+        ft.instances[data].window.show()
         resolve()
     })
 })
+
 ipcMain.handle('transformWindow', async (event, data) => {
     return new Promise((resolve, reject) => {
         switch (data) {
@@ -453,13 +454,17 @@ ipcMain.handle('getSMMData', async (event, data) => {
 })
 
 ipcMain.handle('reopenWindow', async (event, id) => {
-    if (typeof instances[id] == 'undefined') {
+    console.log('reopenWindow', id)
+    console.log('ft.instances[id] = ', ft.instances[id])
+    if (typeof ft.instances[id] == 'undefined') {
+        console.log('Keine Instance Verfügbar!')
         return false
     }
-    instances[id].window = new BrowserWindow({
+
+    ft.instances[id].window = new BrowserWindow({
         width: 1200,
         height: 700,
-        title: 'Live Reading File - ' + instances[id].LogPath,
+        title: 'Live Reading File - ' + ft.instances[id].data.LogPath,
         webPreferences: {
             contextIsolation: false,
             nodeIntegration: false,
@@ -467,16 +472,16 @@ ipcMain.handle('reopenWindow', async (event, id) => {
         }
     });
 
-    instances[id].window.loadURL(url.format({
+    ft.instances[id].window.loadURL(url.format({
         pathname: 'localhost:3000/log',
         protocol: 'http:',
         slashes: true
     }));
 
     // Quit app when closed
-    instances[id].window.on('closed', function () {
-        if (typeof instances[id] != 'undefined') {
-            instances[id].WindowOpen = false
+    ft.instances[id].window.on('closed', function () {
+        if (typeof ft.instances[id] != 'undefined') {
+            ft.instances[id].WindowOpen = false
         }
 
         instancesChanged().then((data) => {
@@ -484,38 +489,34 @@ ipcMain.handle('reopenWindow', async (event, id) => {
         })
 
     });
-    instances[id].WindowOpen = true
+    ft.instances[id].WindowOpen = true
     instancesChanged().then((data) => {
-        mainWindow.webContents.send('instancesChanged', data);
+        mainWindow.webContents.send('ft.instancesChanged', data);
     })
 
-
-
-    instances[id].window.webContents.on('did-finish-load', () => {
+    ft.instances[id].window.webContents.on('did-finish-load', () => {
         //newWindow.webContents.openDevTools()
         //newWindow.webContents.send('newWindowData', data);
-        ft.getLastLines(instances[id].LogPath, 10).then((lastLines) => {
+        console.log('did-finish-load')
+        ft.getLastLines(ft.instances[id].data.LogPath, 10).then((lastLines) => {
             console.log(lastLines)
             lastLines.reverse().forEach(element => {
-                instances[id].window.send('log_msg', element);
+                ft.instances[id].window.send('log_msg', element);
             });
         })
     })
 })
+
 ipcMain.handle('setAlwaysOnTop', async (event, data) => {
     mainWindow.setAlwaysOnTop(data)
 })
 
-
 ipcMain.handle('addWatchedFiles', async (event, file) => {
+
+    var profiles = await settings.getKey('profiles')
+    profiles[settings.data.selectedProfile].WatchFiles[UUID()] = { path: file, autoWindowOpen: true, autoScroll: true, watch: true }
     console.log('addWatchedFiles ', file)
-
-    var key = await settings.getKey('WatchFiles')
-
-    key[UUID()] = { path: file, autoWindowOpen: true, autoScroll: true, watch: true }
-
-    await settings.setKey({ "WatchFiles": key })
-
+    await settings.setKey({ "profiles": profiles })
     ft.watcher.add(file);
 
 })
@@ -524,58 +525,53 @@ ipcMain.handle('loadSettings', async () => {
     return await settings.getSettings()
 })
 
-
-
-
 ipcMain.handle('deleteFile', async (event, id) => {
-    var key = await settings.getKey('WatchFiles')
-    console.log('deleteFile = ', key[id]);
-    delete key[id];
-    await settings.setKey({ "WatchFiles": key })
+
+    var profiles = await settings.getKey('profiles')
+    delete profiles[settings.data.selectedProfile].WatchFiles[id]
+    await settings.setKey({ "profiles": profiles })
+    console.log('deleteFile = ', profiles[settings.data.selectedProfile].WatchFiles[id]);
     return 1
 })
 
 ipcMain.handle('toggleWatch', async (event, id) => {
-    var key = await settings.getKey('WatchFiles')
-    console.log(id);
-    console.log(key);
-    console.log(key[id]);
-    key[id].watch = !key[id].watch
-    await settings.setKey({ "WatchFiles": key })
+    var profiles = await settings.getKey('profiles')
+    var currentFile = profiles[settings.data.selectedProfile].WatchFiles[id]
+
+    currentFile.watch = !currentFile.watch
+
+    profiles[settings.data.selectedProfile].WatchFiles[id] = currentFile
+    await settings.setKey({ "profiles": profiles })
+
+    if (currentFile.watch) {
+        ft.watcher.add(currentFile.path);
+    } else {
+        await ft.watcher.unwatch(currentFile.path);
+    }
 
     console.log(ft.watcher.getWatched())
 
-    if (key[id].watch) {
-        ft.watcher.add(key[id].path);
-    } else {
-        await ft.watcher.unwatch(key[id].path);
-    }
-
-    return key[id].watch
+    return currentFile.watch
 })
 
 ipcMain.handle('changeFilePath', async (event, id, file) => {
-    var key = await settings.getKey('WatchFiles')
-    await ft.watcher.unwatch(key[id].path);
-    key[id].path = file
-    await settings.setKey({ "WatchFiles": key })
-    ft.watcher.add(key[id].path);
-    return key[id]
+
+    var profiles = await settings.getKey('profiles')
+    var currentFile = profiles[settings.data.selectedProfile].WatchFiles[id]
+    await ft.watcher.unwatch(currentFile.path);
+    currentFile.path = file
+    profiles[settings.data.selectedProfile].WatchFiles[id] = currentFile
+    await settings.setKey({ "profiles": profiles })
+    ft.watcher.add(currentFile.path);
+    return currentFile
 })
 
 ipcMain.handle('openRAW', async (event, id) => {
-    var key = await settings.getKey('WatchFiles')
+    var profiles = await settings.getKey('profiles')
+    var currentFile = profiles[settings.data.selectedProfile].WatchFiles[id]
 
-    //var path = settings.data.RAWexecPath.replace(/ /g, "\\ ");
-    //var cmd = `start "${settings.data.RAWexecPath}" "${key[id].path}"`
-    //var cmd = `"${settings.data.RAWexecPath}" "${key[id].path}"`
-    //console.log('cmd', cmd);
+    spawn(settings.data.RAWexecPath, [`${currentFile.path}`]);
 
-    spawn(settings.data.RAWexecPath, [`${key[id].path}`]);
-
-    //script = exec(cmd);
-    // script = exec('start', "${settings.data.RAWexecPath}", "${key[id].path}");
-    //script = exec('start ' + settings.data.RAWexecPath + ' ' + key[id].path);
     return 1
 })
 
@@ -583,6 +579,88 @@ ipcMain.handle('changeRAWexecPath', async (event, path) => {
     await settings.setKey({ "RAWexecPath": path })
     return 1
 })
+
+ipcMain.handle('addProfile', async (event, NewProfile) => {
+    var profiles = await settings.getKey('profiles')
+    var NewUUID = UUID()
+    profiles[NewUUID] = NewProfile
+    // await settings.setKey({ 'selectedProfile': NewUUID })
+    await settings.setKey({ 'profiles': profiles, 'selectedProfile': NewUUID })
+    return 1
+})
+
+ipcMain.handle('changeProfile', async (event, selectedProfile) => {
+    await settings.setKey({ 'selectedProfile': selectedProfile })
+    return 1
+})
+
+ipcMain.handle('removeProfile', async (event, selectedProfile) => {
+
+    var profiles = await settings.getKey('profiles')
+    delete profiles[selectedProfile]
+    await settings.setKey({ 'profiles': profiles, 'selectedProfile': Object.keys(profiles)[0] })
+    return 1
+})
+
+ipcMain.handle('changeProfileName', async (event, profileName) => {
+
+    var profiles = await settings.getKey('profiles')
+    profiles[settings.data.selectedProfile].ProfileName = profileName
+    await settings.setKey({ 'profiles': profiles })
+    return 1
+})
+
+ipcMain.handle('changeExecFileForProfile', async (event, FilePath) => {
+    var profiles = await settings.getKey('profiles')
+    profiles[settings.data.selectedProfile].execFile = FilePath
+    await settings.setKey({ 'profiles': profiles })
+    return 1
+})
+
+ipcMain.handle('addEXECAttribute', async (event, attr) => {
+    var profiles = await settings.getKey('profiles')
+
+    profiles[settings.data.selectedProfile].args[UUID()] = attr
+    await settings.setKey({ 'profiles': profiles })
+    return 1
+})
+
+ipcMain.handle('changeAttribute', async (event, attr) => {
+    var profiles = await settings.getKey('profiles')
+
+    profiles[settings.data.selectedProfile].args[attr.id] = attr.value
+    await settings.setKey({ 'profiles': profiles })
+    return 1
+})
+
+ipcMain.handle('removeAttribute', async (event, id) => {
+    var profiles = await settings.getKey('profiles')
+    delete profiles[settings.data.selectedProfile].args[id]
+    await settings.setKey({ 'profiles': profiles })
+    return 1
+})
+
+ipcMain.handle('startEXEC', async (event) => {
+    var profiles = await settings.getKey('profiles')
+
+    var data = { filePath: profiles[settings.data.selectedProfile].execFile, attr: await JSONTOARRAY(profiles[settings.data.selectedProfile].args) }
+    console.log(data)
+    ft.startGame(data)
+
+    return 1
+})
+
+
+
+
+async function JSONTOARRAY(obj) {
+    var out = []
+    Object.keys(obj).forEach(function (key) {
+        out.push(obj[key])
+
+    })
+    return out
+}
 
 async function getSMMData() {
     var installs = await getInstalls()
@@ -712,7 +790,7 @@ function checkFGLogFile(callback) {
 httpServer.listen(config.port);
 console.log('Log Server Running on http://localhost:' + config.port)
 
-ft.fileChecker()
+
 // getLastLines(LogPath, len).then((lastLines) => {
 // //console.log(lastLines[0])
 // })

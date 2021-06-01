@@ -20,69 +20,12 @@
 
 <body class="" style=" background-color:rgba(255, 255, 255, 0.5)">
     <div class="" style="width: 100%; height: 100%; filter: blur(8px); -webkit-filter: blur(8px); "></div>
-    <!-- Navbar -->
-    <nav style="-webkit-app-region: drag" class="navbar navbar-expand-lg navbar-light bg-light fixed-top bg-dark window-drag">
-        <!-- Container wrapper -->
-        <div class="container-fluid">
-            <!-- Navbar brand -->
-            <p class="navbar-brand text-light" href="#">UE4 Log Reader</p>
-
-            <!-- Left links -->
-            <div class="d-flex input-group w-auto">
-                <div class="nav-item  data-mdb-toggle=" tooltip" data-mdb-placement="bottom"">
-
-                    <a class=" nav-link btn btn-dark btn-sm" onclick="" href="#"><i class="fas fa-angle-double-up "></i></a>
-                </div>
-                <div class="nav-item">
-                    <a class="nav-link btn btn-dark btn-sm" onclick="window.minimize()" href="#"><i class="far fa-window-minimize"></i></a>
-
-                </div>
-                <div class="nav-item">
-
-                    <a class="nav-link btn btn-dark btn-sm" onclick="window.maximize()" href="#"><i class="far fa-window-maximize"></i></a>
-
-                </div>
-                <div class="nav-item">
-
-                    <a class="nav-link btn btn-dark btn-sm" onclick="window.close()" href="#"><i class="far fa-window-close"></i></a>
-                </div>
-            </div>
-
-
-
-
-
-
-
-
-            <!-- Collapsible wrapper -->
-        </div>
-        <!-- Container wrapper -->
-    </nav>
-    <!-- Navbar -->
-
-
-
-    <div class="card text-center mt-1 bg-dark">
-        <div class="card-body">
-            <p class="card-text">
-                df
-            </p>
-
-        </div>
-    </div>
 
 
     <div class="container  bg-dark">
         <!-- Content here -->
 
-        <div class="card col-md bg-dark">
-            <div class="card-header text-light">
-                Attr
-            </div>
-            <div id="SMMData" class="card-body" type="html"></div>
-        </div>
-
+        <!--
         <div class="card col-md bg-dark">
             <div class="card-body ">
 
@@ -111,7 +54,6 @@
                 </div>
 
 
-                <!-- Default switch -->
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" onchange="window.setAlwaysOnTop()" />
                     <label class="form-check-label" for="flexSwitchCheckDefault">Set Aways on Top</label>
@@ -124,22 +66,51 @@
 
 
                 <div class="card-footer"><button type="button" id="startGameBTN" class="btn btn-primary">Start</button></div>
-                <div class="spinner-border m-5" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
+
 
 
             </div>
         </div>
+-->
 
-        <input onclick="window.changeRAWexecPath()" id="RAWexecPath" type="filter" class="form-control text-light bg-dark" onchange="" placeholder="Path to exe or log File" value="<%= settings.WatchFiles[key].path %>" aria-label="Search" />
 
-        <div class="card col-md bg-dark">
-            <div class="card-header text-light">
-                Watched Files
-                <button onclick="window.addWatchedFiles()">Add File</button>
+        <!-- Start Profile Content -->
+        <div id="" class="card-body" type="html">
+            <!-- Path to Open File Raw executable -->
+            <input onclick="window.changeRAWexecPath()" id="RAWexecPath" class="form-control text-light bg-dark" />
+        </div>
+        <!--  -->
+        <div id="profiles" class="card-body" type="html"></div>
+
+        <!-- Watched Files List -->
+        <div class="card-body">
+            <div class="input-group mb-3 ">
+                <p class="input-group-text border-0 text-light ">Watched Files</p>
+                <button class="form-control btn btn-outline-light rounded" onclick="window.addWatchedFiles()">Add File</button>
             </div>
-            <div id="WatchedFiles" class="card-body" type="html"></div>
+            <div id="WatchedFiles" class="" type="html"></div>
+        </div>
+
+
+
+
+        <!-- Settings for executable -->
+        <div class="card-body">
+            <div class="input-group mb-3 ">
+                <p class="input-group-text border-0 text-light ">Execute</p>
+                <input onclick="window.changeExecFileForProfile()" id="ExecFileForProfile" class="form-control text-light bg-dark " />
+                <button onclick="window.startEXEC()" class=" form-control btn btn-outline-success" type="button" data-ripple-color="dark">Start</button>
+            </div>
+            <div class="input-group mb-3">
+                <input id="NewAttribute" class="form-control text-light bg-dark" />
+                <button onclick="window.addEXECAttribute()" class="btn btn-outline-success" type="button" data-ripple-color="dark">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <div id="Attrbutes" class="" type="html"></div>
+        </div>
+        <div class="spinner-border m-5" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
 
     </div>
@@ -267,12 +238,12 @@
     </div>
 
 
-    <!-- End your project here-->
+
 </body>
+
 
 <!-- MDB -->
 <script type="text/javascript" src="js/mdb.min.js"></script>
-
 
 
 </html>

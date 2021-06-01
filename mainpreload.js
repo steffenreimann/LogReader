@@ -4,7 +4,7 @@ window.slash = require('slash');
 const path = require('path')
 const ejs = require('ejs')
 const remote = require('electron').remote;
-
+const crypto = require('crypto');
 
 
 
@@ -19,18 +19,11 @@ window.getInstances = async function (params) {
 }
 
 window.reopenWindow = async function (id) {
-    console.log(window.instances)
+    // id = crypto.createHash("sha256").update(id).digest("hex");
+    console.log(id)
 
-    if (window.instances[id].WindowOpen) {
-
-        const result = ipcRenderer.invoke('windowShow', id)
-        console.log(result); // prints "foo"
-    } else {
-        const result = ipcRenderer.invoke('reopenWindow', id)
-        console.log(result); // prints "foo"
-    }
-
-
+    const result = ipcRenderer.invoke('reopenWindow', id)
+    console.log(result); // prints "foo"
 
 }
 
@@ -69,7 +62,7 @@ window.setAlwaysOnTop = async function () {
     ontop = !ontop
 }
 
-window.addWatchedFiles = async function (data) {
+window.addWatchedFiles = async function () {
 
     var file = await ipcRenderer.invoke('openDialog');
     var result = await ipcRenderer.invoke('addWatchedFiles', file);
@@ -97,17 +90,82 @@ window.changeFilePath = async function (id) {
     }
 }
 
-
-
 window.openRAW = async function (id) {
     await ipcRenderer.invoke('openRAW', id);
 }
-
 
 window.changeRAWexecPath = async function () {
     var file = await ipcRenderer.invoke('openDialog');
     await ipcRenderer.invoke('changeRAWexecPath', file);
 }
+
+window.addProfile = async function () {
+    var profile = {
+        "ProfileName": "NewProfile",
+        "execFile": "c://",
+        "args": [],
+        "WatchFiles": {
+        }
+    }
+    var addProfile = await ipcRenderer.invoke('addProfile', profile);
+    // await ipcRenderer.invoke('changeRAWexecPath', file);
+}
+
+window.changeProfile = async function () {
+    var selectedProfile = document.getElementById('profiles-select').value
+
+    console.log(selectedProfile)
+
+    var changeProfile = await ipcRenderer.invoke('changeProfile', selectedProfile);
+
+}
+
+window.removeProfile = async function () {
+    var selectedProfile = document.getElementById('profiles-select').value
+    var removeProfile = await ipcRenderer.invoke('removeProfile', selectedProfile);
+}
+
+window.changeProfileName = async function (dat) {
+    console.log(dat.value)
+    var changeProfileName = await ipcRenderer.invoke('changeProfileName', dat.value);
+}
+
+window.changeExecFileForProfile = async function () {
+    var file = await ipcRenderer.invoke('openDialog');
+    if (file != undefined) {
+        await ipcRenderer.invoke('changeExecFileForProfile', file);
+    }
+}
+
+window.addEXECAttribute = async function () {
+    var newAttr = document.getElementById('NewAttribute').value
+
+    //newAttr = newAttr.replace(/\s/g, '');
+    if (newAttr != undefined && newAttr != '') {
+        await ipcRenderer.invoke('addEXECAttribute', newAttr);
+    }
+}
+
+window.changeAttribute = async function (id, dat) {
+    if (dat.value != undefined && dat.value != '') {
+        await ipcRenderer.invoke('changeAttribute', { id: id, value: dat.value });
+    }
+}
+
+window.removeAttribute = async function (id) {
+    await ipcRenderer.invoke('removeAttribute', id);
+}
+
+window.startEXEC = async function (id) {
+    await ipcRenderer.invoke('startEXEC');
+}
+
+window.makePathID = function (path) {
+    return crypto.createHash("sha256").update(path).digest("hex")
+}
+
+
+
 
 
 async function getHTMLView(data) {
@@ -158,20 +216,40 @@ async function renderInstances(instances) {
 
 
 async function renderSettings(settings) {
-    document.getElementById('WatchedFiles').innerHTML = ''
     console.log('renderSettings Function!', settings);
-    var html = await getHTMLView('WatchedFiles')
-    document.getElementById('WatchedFiles').innerHTML += ejs.render(html, { settings: settings });
 
+    document.getElementById('WatchedFiles').innerHTML = ''
+    document.getElementById('profiles').innerHTML = ''
+    document.getElementById('Attrbutes').innerHTML = ''
+
+
+    //Render Profile HTML
+    var profileshtml = await getHTMLView('profiles')
+    document.getElementById('profiles').innerHTML += ejs.render(profileshtml, { settings: settings });
+
+    //Render Watched Files HTML
+
+    var html = await getHTMLView('WatchedFiles')
+    document.getElementById('WatchedFiles').innerHTML += ejs.render(html, { profile: settings.profiles[settings.selectedProfile] });
+
+    //Set Path to exe
     document.getElementById('RAWexecPath').value = settings.RAWexecPath
+
+    //Set Exec Path to UI
+    document.getElementById('ExecFileForProfile').value = settings.profiles[settings.selectedProfile].execFile
+
+    //Render Attrebutes List
+    var htmlNewAttrItem = await getHTMLView('NewAttrItem')
+    document.getElementById('Attrbutes').innerHTML += ejs.render(htmlNewAttrItem, { profile: settings.profiles[settings.selectedProfile] });
 
     renderSettingsColors(settings)
 }
 
 function renderSettingsColors(settings) {
-    Object.keys(settings.WatchFiles).forEach(function (key) {
+    var settingProfileFiles = settings.profiles[settings.selectedProfile].WatchFiles
+    Object.keys(settingProfileFiles).forEach(function (key) {
         var currentElement = document.getElementById(`watchBTN-${key}`)
-        if (settings.WatchFiles[key].watch) {
+        if (settingProfileFiles[key].watch) {
             currentElement.classList.remove("btn-outline-light")
             currentElement.classList.add("btn-outline-success");
         } else {

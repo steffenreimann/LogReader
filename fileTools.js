@@ -68,13 +68,13 @@ var newReader = async (file, cb) => {
 //id: { window: '', clientProcess: '', LogPath: '' }
 
 var startGame = async (data) => {
-
-    var id = ut.UUID()
+    var id = crypto.createHash("sha256").update(data.filePath).digest("hex");
+    //var id = ut.UUID()
     var ins = ''
     if (ut.count(instances) != 0) {
         ins = `_${ut.count(instances) + 1}`
     }
-    var logPath = path.join(process.env.LOCALAPPDATA, 'FactoryGame/Saved/Logs', `FactoryGame${ins}.log`)
+    //  var logPath = path.join(process.env.LOCALAPPDATA, 'FactoryGame/Saved/Logs', `FactoryGame${ins}.log`)
 
 
     const child_process = spawn(data.filePath, data.attr, {});
@@ -108,7 +108,7 @@ var startGame = async (data) => {
         return
     });
 
-    instances[id] = { id: id, process: child_process, LogPath: logPath, data: data, WindowOpen: false }
+    instances[id] = { id: id, process: child_process, data: data, WindowOpen: false }
 
     //console.log(instances)
 
@@ -161,16 +161,29 @@ var makeWindow = (file) => {
     });
 }
 
-var fileChecker = () => {
-    var files = []
-    files.push(path.join(process.env.LOCALAPPDATA, 'FactoryGame/Saved/Logs', `FactoryGame.log`))
-    files.push(path.join(process.env.LOCALAPPDATA, 'FactoryGame/Saved/Logs', `FactoryGame_2.log`))
-    files.push(path.join(process.env.LOCALAPPDATA, 'FactoryGame/Saved/Logs', `FactoryGame_3.log`))
-    files.push(path.join(process.env.LOCALAPPDATA, 'FactoryGame/Saved/Logs', `FactoryGame_4.log`))
+var fileChecker = async (settings) => {
+
+    var profiles = settings.profiles
+
+    selectedProfile = profiles[settings.selectedProfile]
+    var FilesForCheck = []
+    Object.keys(selectedProfile.WatchFiles).forEach(function (key) {
+
+        console.log('selectedProfile.WatchFiles[key].path = ', selectedProfile.WatchFiles[key].path)
+        var id = crypto.createHash("sha256").update(selectedProfile.WatchFiles[key].path).digest("hex");
+        var data = { LogPath: selectedProfile.WatchFiles[key].path }
+        instances[id] = { id: id, process: null, data: data, WindowOpen: false }
 
 
+        console.log('instances = ', instances)
+        if (selectedProfile.WatchFiles[key].watch) {
+            FilesForCheck.push(selectedProfile.WatchFiles[key].path)
 
-    module.exports.watcher = chokidar.watch(files, {
+
+        }
+    })
+
+    module.exports.watcher = chokidar.watch(FilesForCheck, {
         persistent: true,
         usePolling: false,
         interval: 1000
@@ -179,16 +192,11 @@ var fileChecker = () => {
     module.exports.watcher.on('add', path => console.log(`File ${path} has been added`))
     module.exports.watcher.on('change', path => {
         console.log('File Changed!')
-
-
         console.log('New Reader Call!!')
-        module.exports.watcher.unwatch(path);
+        module.exports.watcher.unwatch(path)
         newReader(path)
-
     })
     module.exports.watcher.on('unlink', path => console.log(`File ${path} has been removed`));
-
-
 
 }
 
@@ -248,7 +256,6 @@ var findFilter = (filter, data) => {
     })
 }
 
-
 var startMultiGames = (index) => {
     console.log('Starting Games = ', index)
 }
@@ -263,5 +270,6 @@ module.exports = {
     fileChecker,
     makeWindow,
     startGame,
-    startMultiGames
+    startMultiGames,
+    instances
 };

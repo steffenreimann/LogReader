@@ -1,11 +1,12 @@
 <div class="">
 
-    <% Object.keys(settings.WatchFiles).forEach(function( key){ %>
+    <% Object.keys(profile.WatchFiles).forEach(function( key){ console.log(profile.WatchFiles[key]) %>
         <div>
             <div class="input-group mb-3">
 
-                <input onclick="window.changeFilePath('<%= key %>')" id="filePath" type="filter" class="form-control text-light bg-dark" onchange="" placeholder="Path to exe or log File" value="<%= settings.WatchFiles[key].path %>" aria-label="Search" />
+                <input onclick="window.changeFilePath('<%= key %>')" id="filePath" type="filter" class="form-control text-light bg-dark" onchange="" placeholder="Path to exe or log File" value="<%= profile.WatchFiles[key].path  %>" aria-label="Search" />
 
+                <button class="btn btn-outline-light" onclick="window.reopenWindow('<%= window.makePathID(profile.WatchFiles[key].path) %>')">Open</button>
                 <button class="btn btn-outline-light" onclick="window.openRAW('<%= key %>')">Open Raw</button>
                 <button class="btn btn-outline-light" id="watchBTN-<%= key %>" onclick="window.toggleWatch('<%= key %>')">Monitor</button>
                 <button class="btn btn-outline-danger" onclick="window.deleteFile('<%= key %>')">Delete</button>
