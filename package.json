@@ -34,7 +34,7 @@
     "read-last-lines": "^1.8.0",
     "satisfactory-mod-manager-api": "^2.2.2",
     "slash": "^3.0.0",
-    "socket.io": ">=2.4.0",
+    "socket.io": ">=4.5.4",
     "text-file-follower": "^0.1.0"
   },
   "devDependencies": {
